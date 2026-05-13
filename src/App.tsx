@@ -28,7 +28,7 @@ function Nav({ cartCount }: { cartCount: number }) {
       <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
         <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>FŐOLDAL</Link>
         <Link to="/merch" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>BOLT</Link>
-                <Link to="/about" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>ROLÚNK</Link>
+                <Link to="/about" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>RÓLUNK</Link>
         <Link to="/cart" style={{ 
           backgroundColor: '#5bdc00', color: 'black', padding: '0.5rem 1.2rem', 
           borderRadius: '4px', textDecoration: 'none', fontWeight: '800' 
@@ -45,9 +45,13 @@ function About() {
     <div style={{ padding: '4rem 2rem', maxWidth: '800px', margin: '0 auto', color: 'white', fontFamily: 'monospace' }}>
       <h2 style={{ color: '#5bdc00', fontSize: '3rem', fontWeight: '900', marginBottom: '2rem' }}>RÓLUNK</h2>
       <div style={{ borderLeft: '4px solid #5bdc00', paddingLeft: '1.5rem', marginBottom: '3rem' }}>
-        <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>
-          A Romlott Zokni 2025-ben alakult Budapesten. Nem csak zenélünk: mi adjuk a város legbüdösebb punk-injekcióját közvetlenül a hallójárataidba.
-        </p>
+        <p style={{ lineHeight: '1.9', fontSize: '1.15rem', color: '#ddd', textAlign: 'justify' }}>
+    A Romlott Zokni története nem egy sikersztori, hanem egy statisztikai hiba. 2024-ben, egy átbulizott éjszaka után Lyukas Laci (ének/basszus) rájött, hogy a mérnöki precizitás és a punk káosz nem zárják ki egymást. 
+    <br /><br />
+    A zenekar alapításának pillanata az volt, amikor Szakadt Szandi (gitár) véletlenül rálépett egy effektpedálra, és az a hang, ami kijött a hangfalból, jobban fájt, mint egy elrontott adatbázis-migráció. Ehhez csatlakozott Büdös Berci (dobok), aki korábban csak kávégépeken dobolt a vizsgaidőszakban, de nálunk végre igazi bőröket püfölhet. 
+    <br /><br />
+    Nem vagyunk virtuózok, nem ismerjük a kottát, és a hangszerünk is gyakran elhangolódik a koncert felénél, de egyvalamit garantálunk: a hangerőt. A zenénk olyan, mint a kedvenc zoknid: lehet, hogy szakadt, lehet, hogy büdös, de elválaszthatatlan vagy tőle. Mi vagyunk a budapesti underground digitális lázadói!
+  </p>
         <p style={{ color: '#888' }}>
           Minden koncertünket saját magunk rögzítjük, hogy a nyers energia akkor is átjöjjön, ha épp nem az első sorban pogózol. PUNK IS NOT DEAD, JUST SMELLS FUNNY.
         </p>
@@ -191,7 +195,7 @@ function CartPage({ cart, removeFromCart, clearCart }: { cart: any[], removeFrom
   // Inside CartPage component in App.tsx
   const handleOrder = async () => {
     if (!email.includes('@') || address.length < 5) {
-      alert("Hé! Érvényes e-mailt és címet adj meg!");
+      alert("Hiba! Érvényes e-mailt és címet adj meg!");
       return;
     }
 
@@ -234,7 +238,7 @@ function CartPage({ cart, removeFromCart, clearCart }: { cart: any[], removeFrom
           <h2 style={{ fontSize: '2rem' }}>🤘 RENDELÉS LEADVA!</h2>
           <p style={{ color: 'white', marginTop: '1rem' }}>Rendelésszám: <span style={{color: '#5bdc00'}}>{completedOrder.orderId}</span></p>
           <p style={{ color: 'white' }}>Szállítási cím: {address}</p>
-          <p style={{ color: '#888', marginTop: '1rem' }}>Várd a futárt, vigyél neki vizet!</p>
+          <p style={{ color: '#888', marginTop: '1rem' }}>Felvesszük veled a kapcsolatot, te pedig csak várd a futárt!</p>
           <Link to="/" style={{ color: '#5bdc00', display: 'inline-block', marginTop: '2rem', fontWeight: 'bold' }}>VISSZA A FŐOLDALRA</Link>
         </div>
       </div>
