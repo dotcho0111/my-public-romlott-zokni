@@ -1,33 +1,42 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
-const crypto = require('crypto');
+const crypto = require('crypto'); // Beépített modul a véletlenszám-generáláshoz
 const app = express();
-app.use(cors()); app.use(express.json());
 
-const db = new sqlite3.Database('./romlott_zokni.db');
+app.use(cors());
+app.use(express.json());
 
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, order_code TEXT UNIQUE, email TEXT, address TEXT, payment_method TEXT, total_price INTEGER)`);
-    db.run(`CREATE TABLE IF NOT EXISTS order_items (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, product_name TEXT, size TEXT, price INTEGER)`);
+const db = new sqlite3.Database('./romlott_zokni.db', (err) => {
+    if (!err) console.log("Adatbázis aktív.");
 });
 
-// Ez ellenőrzi, hogy létezik-e már a kód
-function isCodeUnique(code) {
-    return new Promise((resolve) => {
-        db.get("SELECT id FROM orders WHERE order_code = ?", [code], (err, row) => resolve(!row));
-    });
+// Véletlenszerű, egyedi azonosító generáló függvény (pl: RZ-X8F2-A9P1)
+function generateOrderCode() {
+    return 'RZ-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 }
 
-async function generateUniqueCode() {
-    let code = '';
-    let unique = false;
-    while (!unique) {
-        code = 'RZ-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-        unique = await isCodeUnique(code);
-    }
-    return code;
-}
+db.serialize(() => {
+    // Hozzáadtuk az order_code oszlopot UNIQUE megkötéssel
+    db.run(`CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_code TEXT UNIQUE, 
+        email TEXT,
+        address TEXT,
+        payment_method TEXT,
+        total_price INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER,
+        product_name TEXT,
+        size TEXT,
+        price INTEGER,
+        FOREIGN KEY(order_id) REFERENCES orders(id)
+    )`);
+});
 
 const tourDates = [
     { id: 1, date: '2026.05.20', city: 'Budapest', venue: 'Penészes Pince', ticketUrl: 'https://peneszespince.hu/tickets' },
@@ -46,19 +55,33 @@ const tourDates = [
 
 app.get('/api/tour-dates', (req, res) => res.json(tourDates));
 
-app.post('/api/checkout', async (req, res) => {
+// RENDELÉS LEADÁSA - MENTÉS AZ ADATBÁZISBA
+app.post('/api/checkout', (req, res) => {
     const { email, address, cart, total, payment } = req.body;
-    const code = await generateUniqueCode();
 
-    db.run(`INSERT INTO orders (order_code, email, address, payment_method, total_price) VALUES (?, ?, ?, ?, ?)`, 
-    [code, email, address, payment, total], function(err) {
-        if (err) return res.status(500).json(err);
-        const orderId = this.lastID;
+    // 1. Mentés az 'orders' táblába
+    const orderSql = `INSERT INTO orders (email, address, payment_method, total_price) VALUES (?, ?, ?, ?)`;
+    
+    db.run(orderSql, [email, address, payment, total], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const lastOrderId = this.lastID; // Megkapjuk a generált ID-t
+
+        // 2. Mentés az 'order_items' táblába minden tételre
+        const itemSql = `INSERT INTO order_items (order_id, product_name, size, price) VALUES (?, ?, ?, ?)`;
+        
         cart.forEach(item => {
-            db.run(`INSERT INTO order_items (order_id, product_name, size, price) VALUES (?, ?, ?, ?)`, [orderId, item.name, item.selectedSize, item.price]);
+            db.run(itemSql, [lastOrderId, item.name, item.selectedSize, item.price]);
         });
-        res.json({ orderId: code });
+
+        console.log(`✅ Új rendelés mentve az adatbázisba! ID: ${lastOrderId}`);
+        res.status(201).json({ 
+            message: "RENDELÉS SIKERESEN MENTVE AZ ADATBÁZISBA!", 
+            orderId: "RZ-" + lastOrderId 
+        });
     });
 });
 
-app.listen(5000, () => console.log("Szerver fut az 5000-esen"));
+app.listen(5000, () => console.log("Szerver fut az 5000-es porton"));

@@ -212,7 +212,8 @@ function CartPage({ cart, removeFromCart, clearCart }: { cart: any[], removeFrom
           to_email: email,
           order_id: data.orderId,
           total_amount: total,
-          shipping_address: address
+          shipping_address: address,
+          email_logo: '/zokni_zokni.png'
         },
         '18is6JcjKKDs5aqQY'
       );
